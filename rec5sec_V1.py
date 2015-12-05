@@ -4,7 +4,7 @@ import wave
 def rec5sec(output_file_name):
 	FORMAT = pyaudio.paInt16 # 16-bits integers
 	CHANNELS = 1
-	RATE = 8000
+	RATE = 44100
 	CHUNK = 1024
 	RECORD_SECONDS = 5
 	WAVE_OUTPUT_FILENAME = output_file_name # Must contain ".wav" 
