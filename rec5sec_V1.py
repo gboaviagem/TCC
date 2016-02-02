@@ -1,6 +1,6 @@
 import pyaudio
 import wave
- 
+
 def rec5sec(output_file_name):
 	FORMAT = pyaudio.paInt16 # 16-bits integers
 	CHANNELS = 1
