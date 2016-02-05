@@ -16,8 +16,12 @@ covariance_matrix = 'full'
 # Building GMM 
 model_UBM = get_UBM_all(cov_type = covariance_matrix)
 model_true = get_GMM_true_speaker(speaker_samples='combined')
+threshold = get_score_threshold(speaker_samples_threshold = 'combined')
 
 
+
+# ------------------------------------------------------
+# Main loop
 while keep_in_loop:
 	option = raw_input('\nWhat to do?\n1- Exit\n2- Train true speaker\n3- Listen to test speaker\n4- Evaluate\n5- Recordings for threshold calculation\nOption: ')
 	if option=='2':
@@ -33,6 +37,17 @@ while keep_in_loop:
 	
 		score = np.sum(score_true - score_UBM)
 		print '\nScore: ', score
+		print '\nThreshold: ', threshold
+
+		
+		# ----------------------------------
+		# DECISION
+		# ----------------------------------
+		if score >= threshold:
+			decision = 'ACCEPTED'
+		else:
+			decision = 'REJECTED'
+		print '\n', decision
 
 	
 	if option=='1':

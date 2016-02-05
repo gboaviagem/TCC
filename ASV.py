@@ -369,10 +369,10 @@ def get_score_threshold(speaker_samples_threshold='combined'):
 		scores[0] = np.sum(model_true.score(ceps_01))
 		scores[1] = np.sum(model_true.score(ceps_02))
 		scores[2] = np.sum(model_true.score(ceps_03))
-	
-		print scores[0]
-		print scores[1]
-		print scores[2]
+ 
+# 		print scores[0]
+# 		print scores[1]
+# 		print scores[2]
 	
 # 		return np.min(scores)
 		scores_sorted = np.sort(scores)
