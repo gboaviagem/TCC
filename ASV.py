@@ -156,7 +156,8 @@ def audio2ceps(filename,flag_normalize=True):
 	
 	# --------------------------------------------
 	# Text file creation
-	np.savetxt(file + '_ceps.txt',ceps,header='MFCC from file ' + filename + '.\nInfo:\n\tSample rate: ' + str(RATE) + '\n\tNumber of MFCC per frame: ' + str(nceps) + '\n\tNumber of frames (samples): ' + str(nframes) + '\n\n')
+	str_header = 'MFCC from file ' + filename + '.\nInfo:\n\tSample rate: ' + str(RATE) + '\n\tNumber of MFCC per frame: ' + str(nceps) + '\n\tNumber of frames (samples): ' + str(nframes) + '\n\n'
+	np.savetxt(file + '_ceps.txt',ceps,header=str_header)
 
 
 def convert_all_audiofile2ceps(normalize=True):
