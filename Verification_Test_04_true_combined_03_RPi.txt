@@ -1,3 +1,4 @@
+# VERIFICATION TEST ON RASPBERRY PI
 # TCCgit ASV
 # Header: a single ASV test is carried out for each test speaker, with the true speaker fixed, but having three elocutions.
 # GENDER	INDEX	AGE	SCORE	DECISION

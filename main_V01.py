@@ -26,7 +26,25 @@ while keep_in_loop:
 	option = raw_input('\nWhat to do?\n1- Exit\n2- Train true speaker\n3- Listen to test speaker\n4- Evaluate\n5- Recordings for threshold calculation\nOption: ')
 	if option=='2':
 		record_true_speaker()
+		model_true = get_GMM_true_speaker(speaker_samples='combined') # True Speaker model updated
 	
+	if option=='1':
+		keep_in_loop=0
+	
+	if option=='4':
+		option_evaluate = raw_input('Speaker samples combined (1), separated (2) or both(3)? ')
+		if option_evaluate=='1':
+			evaluate_all_vs_single_true(flag_speaker_samples='combined')
+		if option_evaluate=='2':
+			evaluate_all_vs_single_true(flag_speaker_samples='separated')
+		if option_evaluate=='3':
+			evaluate_all_vs_single_true(flag_speaker_samples='separated')
+			evaluate_all_vs_single_true(flag_speaker_samples='combined')
+	
+	if option=='5':
+		record_for_threshold_calculation()
+		threshold = get_score_threshold(speaker_samples_threshold = 'combined') # Threshold updated
+		
 	if option=='3':
 		print '\nRecording Test Speaker elocution.'
 		record_test_speaker()
@@ -48,20 +66,3 @@ while keep_in_loop:
 		else:
 			decision = 'REJECTED'
 		print '\n', decision
-
-	
-	if option=='1':
-		keep_in_loop=0
-	
-	if option=='4':
-		option_evaluate = raw_input('Speaker samples combined (1), separated (2) or both(3)? ')
-		if option_evaluate=='1':
-			evaluate_all_vs_single_true(flag_speaker_samples='combined')
-		if option_evaluate=='2':
-			evaluate_all_vs_single_true(flag_speaker_samples='separated')
-		if option_evaluate=='3':
-			evaluate_all_vs_single_true(flag_speaker_samples='separated')
-			evaluate_all_vs_single_true(flag_speaker_samples='combined')
-	
-	if option=='5':
-		record_for_threshold_calculation()
