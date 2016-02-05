@@ -30,7 +30,6 @@ current_folder = os.getcwd()
 text_dependency = current_folder.split('/')[-1] # Takes the name of the enclosing folder, if it is TD (text dependent) or TI (text independent)
 
 
-
 # Recording -----------------------------------------
 def rec5sec(output_file_name,save_ceps=True):
 	print '\nSample rate: ', RATE
@@ -135,6 +134,8 @@ def read_audiofile(filename,normalize=True):
 def audio2ceps(filename,flag_normalize=True):
 	'''
 	Reads an audio file and creates a text file with its MFCC.
+	
+	Problem to fix: in the Raspberry, the function np.savetxt somehow doesn't accept the keyword 'header'.
 	'''
 	
 	file = filename.split('.')[0] # Separates file name and extension
@@ -157,7 +158,10 @@ def audio2ceps(filename,flag_normalize=True):
 	# --------------------------------------------
 	# Text file creation
 	str_header = 'MFCC from file ' + filename + '.\nInfo:\n\tSample rate: ' + str(RATE) + '\n\tNumber of MFCC per frame: ' + str(nceps) + '\n\tNumber of frames (samples): ' + str(nframes) + '\n\n'
-	np.savetxt(file + '_ceps.txt',ceps,header=str_header)
+	if sys.platform=='linux2' # in Raspbian
+		np.savetxt(file + '_ceps.txt',ceps)
+	else:
+		np.savetxt(file + '_ceps.txt',ceps,header=str_header)
 
 
 def convert_all_audiofile2ceps(normalize=True):
