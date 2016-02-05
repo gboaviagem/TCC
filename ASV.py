@@ -1,7 +1,14 @@
 '''
 UFPE - DES
 Functions regarding Automatic Speaker Verification with GMM-UBM approach.
+
+In this version, all parameterization steps consist only in reading the MFCC from the .txt files.
 '''
+
+# CONSTANTS ------------------------------------
+nceps = 25
+RATE = 8000 # Sample rate
+
 
 import numpy as np
 import os
@@ -19,25 +26,36 @@ from Talkbox import mfcc,periodogram
 from sklearn.mixture import GMM
 
 
+current_folder = os.getcwd()
+text_dependency = current_folder.split('/')[-1] # Takes the name of the enclosing folder, if it is TD (text dependent) or TI (text independent)
+
+
+
 # Recording -----------------------------------------
-def rec5sec(output_file_name):
-	RATE = 44100 # Sample rate
+def rec5sec(output_file_name,save_ceps=True):
+	print '\nSample rate: ', RATE
 	CHANNELS = 1
 	
 	if sys.platform=='linux2':
 		# For when using in Raspbian
 		os.system("arecord -D plughw:0,0 -d 5 -f S16_LE -c " + str(CHANNELS) + " -r " + str(RATE) + " ./" + output_file_name)
+		if save_ceps:
+			audio2ceps(output_file_name) # Saves a .txt file with the MFCC of the file
 	else:
 		# For another platforms, including Mac OS.
 		FORMAT = pyaudio.paInt16 # 16-bits integers
 		CHUNK = 1024
 		RECORD_SECONDS = 5
 		WAVE_OUTPUT_FILENAME = output_file_name # Must contain ".wav" 
+		input_device = 2 # Index of my microfone "C-Media USB Audio Device"
+		
+		# ATTENTION: the input_device variable depends on the PC one runs this code!
+		
 		audio = pyaudio.PyAudio()
  
 		# start Recording
 		stream = audio.open(format=FORMAT, channels=CHANNELS,
-						rate=RATE, input=True,
+						rate=RATE, input=True, input_device_index = input_device,
 						frames_per_buffer=CHUNK)
 		print "recording..."
 		frames = []
@@ -59,6 +77,9 @@ def rec5sec(output_file_name):
 		waveFile.setframerate(RATE)
 		waveFile.writeframes(b''.join(frames))
 		waveFile.close()
+		
+		if save_ceps:
+			audio2ceps(output_file_name) # Saves a .txt file with the MFCC of the file
 
 
 def record_true_speaker():
@@ -111,6 +132,44 @@ def read_audiofile(filename,normalize=True):
 	return fs, np_audio
 
 
+def audio2ceps(filename,flag_normalize=True):
+	'''
+	Reads an audio file and creates a text file with its MFCC.
+	'''
+	
+	file = filename.split('.')[0] # Separates file name and extension
+	
+	# --------------------------------------------
+	# File reading into numpy array	
+	[fs, np_audio] = read_audiofile(filename,normalize = flag_normalize)
+	
+	# --------------------------------------------
+	# MFCC calculation
+	t_frame = 20*10**(-3) # Duration in seconds of each frame
+	nwin = t_frame*fs
+	# nwin is the number of samples per frame.
+	# Para t_frame=20ms e fs=16kHz, nwin=320
+	nfft = 512
+	
+	ceps, mspec, spec = mfcc(np_audio, nwin, nfft, fs, nceps)
+	[nframes, ncolumns] = ceps.shape
+	
+	# --------------------------------------------
+	# Text file creation
+	np.savetxt(file + '_ceps.txt',ceps,header='MFCC from file ' + filename + '.\nInfo:\n\tSample rate: ' + str(RATE) + '\n\tNumber of MFCC per frame: ' + str(nceps) + '\n\tNumber of frames (samples): ' + str(nframes) + '\n\n')
+
+
+def convert_all_audiofile2ceps(normalize=True):
+	'''
+	Converts all recorded audio files from .wav to .txt, saving their MFCC.
+	'''
+	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
+	audiofiles = [x for x in files_in_folder if ('.wav' in x)]
+	
+	for file in audiofiles:
+		audio2ceps(file,flag_normalize = normalize)
+	
+
 def get_np_audiofiles(UBM=False, TS=False, normalize=True, exclude_speaker=None):
 	'''
 	Returns all the audio files for male and female elocutions in Numpy-array form.
@@ -124,6 +183,7 @@ def get_np_audiofiles(UBM=False, TS=False, normalize=True, exclude_speaker=None)
 	# -----------------------------
 	# Listing only the audio files
 	# -----------------------------
+	# Files just from the UBM ----------------------------
 	if UBM:
 		audiofiles_male = [x for x in files_in_folder if ('.wav' in x) and ('M' in x) and ('UBM' in x) and ('_test' not in x) and ('_true' not in x)]
 		audiofiles_female = [x for x in files_in_folder if ('.wav' in x) and ('F' in x) and ('UBM' in x) and ('_test' not in x) and ('_true' not in x)]
@@ -131,10 +191,18 @@ def get_np_audiofiles(UBM=False, TS=False, normalize=True, exclude_speaker=None)
 			audiofiles_male.remove(exclude_speaker)
 		if exclude_speaker in audiofiles_female:
 			audiofiles_female.remove(exclude_speaker)
+		
+		print 'Number of files for UBM: ', len(audiofiles_male) + len(audiofiles_female)
+	
+	# Files just from the true speaker ----------------------------
 	if TS:
 		audiofiles = [x for x in files_in_folder if ('.wav' in x) and ('_true' in x) and ('_test' not in x)]
 		if exclude_speaker in audiofiles:
 			audiofiles.remove(exclude_speaker)
+		
+		print 'Number of files for True Speaker GMM: ', len(audiofiles)
+	
+	# Files neither from the true speaker nor the UBM ----------------------------
 	if ((not UBM) and (not TS)):
 		audiofiles_male = [x for x in files_in_folder if ('.wav' in x) and ('M' in x) and ('UBM' not in x) and ('_true' not in x) and ('_test' not in x)]
 		audiofiles_female = [x for x in files_in_folder if ('.wav' in x) and ('F' in x) and ('UBM' not in x) and ('_true' not in x) and ('_test' not in x)]
@@ -170,98 +238,60 @@ def get_np_audiofiles(UBM=False, TS=False, normalize=True, exclude_speaker=None)
 
 
 # Parameterization ----------------------------------
-def get_ceps_UBM(str_gender='all', exclude_speaker=None):
+def get_ceps_UBM():
+	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
 	
-	# -------------------
-	# Getting audio files in Numpy array format
-	# -------------------
+	# Files just from the UBM ----------------------------
+	cepsfiles = [x for x in files_in_folder if ('UBM_ceps.txt' in x)]
 	
-	[fs, np_audio_male, np_audio_female, np_audio_all] = get_np_audiofiles(UBM=True, exclude_speaker=None)
-
+	ceps = np.loadtxt(cepsfiles[0])
 	
-	# ----------------------------------------------------
-	# Computing MFCC
-	# ----------------------------------------------------
+	for i in range(len(cepsfiles) - 1):
+		current_ceps = np.loadtxt(cepsfiles[i + 1])
+		ceps = np.vstack((ceps,current_ceps))
 	
-	t_frame = 20*10**(-3) # Duration in seconds of each frame
-
-	nwin = t_frame*fs
-	# nwin is the number of samples per frame.
-	# Para t_frame=20ms e fs=16kHz, nwin=320
-	nfft = 512
-	nceps = 26
-	
-	if str_gender == 'male':
-		ceps, mspec, spec = mfcc(np_audio_male, nwin, nfft, fs, nceps)
-	if str_gender == 'female':
-		ceps, mspec, spec = mfcc(np_audio_female, nwin, nfft, fs, nceps)
-	else:
-		ceps, mspec, spec = mfcc(np_audio_all, nwin, nfft, fs, nceps)
 	return ceps
 
 
 def get_ceps_true_speaker(speaker_samples_ceps='combined'):
-	nfft = 512
-	nceps = 26
-	t_frame = 20*10**(-3) # Duration in seconds of each frame
+	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
+	true_speaker_files = [x for x in files_in_folder if ('true_speaker_ceps.txt' in x)]
 
 	if speaker_samples_ceps=='combined':
-		[fs, TS_audiofiles] = get_np_audiofiles(UBM=False, TS=True, normalize=True)
-		nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
-		ceps, mspec, spec = mfcc(TS_audiofiles, nwin, nfft, fs, nceps)
+		ceps = np.loadtxt(true_speaker_files[0])
+	
+		for i in range(len(true_speaker_files) - 1):
+			current_ceps = np.loadtxt(true_speaker_files[i + 1])
+			ceps = np.vstack((ceps,current_ceps))
+			
 		return ceps
 	else:
-		files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
-		true_speaker_files = [x for x in files_in_folder if ('.wav' in x) and ('true_speaker' in x)]
 		
-		[fs,audio_01] = read_audiofile(true_speaker_files[0],normalize=True)
-		nwin = t_frame*fs
-		ceps_01, mspec, spec = mfcc(audio_01, nwin, nfft, fs, nceps)
-
-		[fs,audio_02] = read_audiofile(true_speaker_files[1],normalize=True)
-		nwin = t_frame*fs
-		ceps_02, mspec, spec = mfcc(audio_02, nwin, nfft, fs, nceps)
-
-		[fs,audio_03] = read_audiofile(true_speaker_files[2],normalize=True)
-		nwin = t_frame*fs
-		ceps_03, mspec, spec = mfcc(audio_03, nwin, nfft, fs, nceps)
+		ceps_01 = np.loadtxt(true_speaker_files[0])
+		ceps_02 = np.loadtxt(true_speaker_files[1])
+		ceps_03 = np.loadtxt(true_speaker_files[2])
 		
 		return ceps_01, ceps_02, ceps_03
 		
 
 def get_ceps_test_speaker():
+	
 	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
-	test_file = [x for x in files_in_folder if ('test_speaker.wav' in x)]
-	[fs,np_test] = read_audiofile(test_file[0],normalize=True)
 	
-	t_frame = 20*10**(-3) # Duration in seconds of each frame
-	nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
-	nfft = 512
-	nceps = 26
+	# Files just from the UBM ----------------------------
+	cepsfiles = [x for x in files_in_folder if ('test_speaker_ceps.txt' in x)]
 	
-	ceps, mspec, spec = mfcc(np_test, nwin, nfft, fs, nceps)
-	
+	ceps = np.loadtxt(cepsfiles[0])
 	return ceps
 
 
 def get_ceps_threshold_files():
 	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
-	threshold_files = [x for x in files_in_folder if ('threshold_audio.wav' in x)]
-	t_frame = 20*10**(-3) # Duration in seconds of each frame
-	nfft = 512
-	nceps = 26
-
-	[fs,np_threshold] = read_audiofile(threshold_files[0],normalize=True)
-	nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
-	ceps_01, mspec, spec = mfcc(np_threshold, nwin, nfft, fs, nceps)
-
-	[fs,np_threshold] = read_audiofile(threshold_files[1],normalize=True)
-	nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
-	ceps_02, mspec, spec = mfcc(np_threshold, nwin, nfft, fs, nceps)
-
-	[fs,np_threshold] = read_audiofile(threshold_files[2],normalize=True)
-	nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
-	ceps_03, mspec, spec = mfcc(np_threshold, nwin, nfft, fs, nceps)
+	threshold_files = [x for x in files_in_folder if ('threshold_audio_ceps.txt' in x)]
+	
+	ceps_01 = np.loadtxt(threshold_files[0])
+	ceps_02 = np.loadtxt(threshold_files[1])
+	ceps_03 = np.loadtxt(threshold_files[2])
 	
 	return ceps_01, ceps_02, ceps_03
 
@@ -269,7 +299,7 @@ def get_ceps_threshold_files():
 # Universal Background Model ------------------------
 def get_UBM_all(ngaussians = 10, cov_type='full', exclude_speaker=None):
 
-	ceps_all = get_ceps_UBM(str_gender='all')	
+	ceps_all = get_ceps_UBM()	
 	gmm = GMM(n_components=ngaussians, covariance_type = cov_type)
 	model_all = gmm.fit(ceps_all)
 	print "model_all converged? ",model_all.converged_
@@ -279,7 +309,7 @@ def get_UBM_all(ngaussians = 10, cov_type='full', exclude_speaker=None):
 
 def get_UBM_female(cov_type,exclude_speaker):
 	
-	ceps_female = get_ceps_UBM(str_gender='female')
+	ceps_female = get_ceps_UBM()
 	ngaussians = 10	
 	gmm = GMM(n_components=ngaussians, covariance_type = cov_type)
 	model_female = gmm.fit(ceps_female)
@@ -290,7 +320,7 @@ def get_UBM_female(cov_type,exclude_speaker):
 
 def get_UBM_male(cov_type,exclude_speaker):
 		
-	ceps_male = get_ceps_UBM(str_gender='male')
+	ceps_male = get_ceps_UBM()
 	ngaussians = 10	
 	gmm = GMM(n_components=ngaussians, covariance_type = cov_type)
 	model_male = gmm.fit(ceps_male)
@@ -313,9 +343,7 @@ def get_GMM_true_speaker(ngaussians=10, cov_type='full', speaker_samples='combin
 		return model_true
 	else: # in this case speaker_samples='separated'
 		[ceps_01, ceps_02, ceps_03] = get_ceps_true_speaker(speaker_samples_ceps = speaker_samples)
-		print type(ceps_01), len(ceps_01)
-		print type(ceps_02), len(ceps_02)
-		print type(ceps_03), len(ceps_03)
+
 		gmm = GMM(n_components=ngaussians, covariance_type = cov_type)
 		model_true01 = gmm.fit(ceps_01)
 		model_true02 = gmm.fit(ceps_02)
@@ -421,7 +449,6 @@ def evaluate_all_vs_true():
 				# nwin is the number of samples per frame.
 				# Para t_frame=20ms e fs=16kHz, nwin=320
 				nfft = 512
-				nceps = 26
 
 				ceps_true, mspec, spec = mfcc(audio_true, nwin, nfft, fs, nceps)
 
@@ -463,13 +490,24 @@ def evaluate_all_vs_true():
 		f.close()
 
 
-def evaluate_all_vs_single_true(speaker_samples='combined'):
+def evaluate_all_vs_single_true(flag_speaker_samples='combined'):
+	
+	# ----------------------------------------
+	# Model of True Speaker
+	if flag_speaker_samples=='combined':
+		model_true = get_GMM_true_speaker(speaker_samples=flag_speaker_samples)
+	else: # Neste caso flag_speaker_samples=='separated'
+		[model_true_01, model_true_02, model_true_03] = get_GMM_true_speaker(speaker_samples=flag_speaker_samples)
+	
+	# ----------------------------------------
+	# Setting up text file
+	
 	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
-	text_output_files = [x for x in files_in_folder if ('Verification_Test_04_true' in x) and (speaker_samples in x)]
+	text_output_files = [x for x in files_in_folder if ('Verification_Test_04_true' in x) and (flag_speaker_samples in x)]
 
 	number = len(text_output_files) + 1
-	f = open('Verification_Test_04_true_' + speaker_samples + '_0' + str(number) + '.txt','w')
-	f.write('# Header: a single ASV test is carried out for each test speaker, with the true speaker fixed, but having three elocutions.\n# GENDER\tINDEX\tAGE\tSCORE\tDECISION\n')
+	f = open('Verification_Test_04_true_' + flag_speaker_samples + '_0' + str(number) + '.txt','w')
+	f.write('# ' + text_dependency + ' ASV\n# Header: a single ASV test is carried out for each test speaker, with the true speaker fixed, but having three elocutions.\n# GENDER\tINDEX\tAGE\tSCORE\tDECISION\n')
 
 	n_accepted = 0
 	n_false_acceptance = 0
@@ -490,7 +528,7 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 	Getting threshold
 	----------------------------------------------------
 	'''
-	threshold = get_score_threshold(speaker_samples_threshold = speaker_samples)
+	threshold = get_score_threshold(speaker_samples_threshold = flag_speaker_samples)
 
 
 	files_in_folder = os.listdir(os.getcwd()) # List of files in current directory
@@ -498,7 +536,7 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 	audiofiles_female = [x for x in files_in_folder if ('.wav' in x) and ('F' in x) and ('UBM' not in x) and ('_test' not in x) and ('_true' not in x)]
 	audiofiles_S = [x for x in files_in_folder if ('.wav' in x) and ('S' in x) and ('UBM' not in x) and ('_test' not in x) and ('_true' not in x)]
 
-
+	# ------------------------------------------------------------------------
 	# Running through the lists of utterances from non-True speakers
 	for gender_file_list in [audiofiles_male, audiofiles_female]:
 		for current_test_speaker in gender_file_list:
@@ -518,7 +556,6 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 			t_frame = 20*10**(-3) # Duration in seconds of each frame
 			nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
 			nfft = 512
-			nceps = 26
 
 			ceps_test, mspec, spec = mfcc(audio_test, nwin, nfft, fs, nceps)
 
@@ -527,17 +564,15 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 			Scoring
 			----------------------------------------------------
 			'''
-			if speaker_samples=='combined':
-				model_true = get_GMM_true_speaker(speaker_samples='combined')
-
+			if flag_speaker_samples=='combined':
+				
 				score_UBM = UBM_all.score(ceps_test)
 				score_true = model_true.score(ceps_test)
 
 				score = np.sum(score_true - score_UBM)
 				print '\nScore: ', score
-			else: # Neste caso speaker_samples=='separated'
-				[model_true_01, model_true_02, model_true_03] = get_GMM_true_speaker(speaker_samples='separated')
-
+			else: # Neste caso flag_speaker_samples=='separated'
+				
 				score_UBM = UBM_all.score(ceps_test)
 				score01 = model_true_01.score(ceps_test)
 				score02 = model_true_02.score(ceps_test)
@@ -562,7 +597,8 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 				n_rejected += 1
 		
 			f.write(gender + '\t' + index + '\t' + age + '\t' + str(score) + '\t' + decision + '\n')
-
+	
+	# ------------------------------------------------------------------------
 	# Running through the utterances of true speaker (prefix = S)
 	for current_test_speaker in audiofiles_S:
 		print '\nTEST 04'
@@ -581,7 +617,6 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 		t_frame = 20*10**(-3) # Duration in seconds of each frame
 		nwin = t_frame*fs # nwin is the number of samples per frame. Para t_frame=20ms e fs=16kHz, nwin=320
 		nfft = 512
-		nceps = 26
 
 		ceps_test, mspec, spec = mfcc(audio_test, nwin, nfft, fs, nceps)
 
@@ -590,17 +625,15 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 		Scoring
 		----------------------------------------------------
 		'''
-		if speaker_samples=='combined':
-			model_true = get_GMM_true_speaker(speaker_samples='combined')
-
+		if flag_speaker_samples=='combined':
+			
 			score_UBM = UBM_all.score(ceps_test)
 			score_true = model_true.score(ceps_test)
 
 			score = np.sum(score_true - score_UBM)
 			print '\nScore: ', score
-		else: # Neste caso speaker_samples=='separated'
-			[model_true_01, model_true_02, model_true_03] = get_GMM_true_speaker(speaker_samples='separated')
-
+		else: # Neste caso flag_speaker_samples=='separated'
+			
 			score_UBM = UBM_all.score(ceps_test)
 			score01 = model_true_01.score(ceps_test)
 			score02 = model_true_02.score(ceps_test)
@@ -629,3 +662,4 @@ def evaluate_all_vs_single_true(speaker_samples='combined'):
 	
 	f.write('# Number of accepted: ' + str(n_accepted) + '\n# Number of rejected: ' + str(n_rejected) + '\n# Number of false-acceptance: ' + str(n_false_acceptance) + '\n# Number of false-rejection: ' + str(n_false_rejection) + '\n# Threshold: ' + str(threshold))
 	f.close()
+

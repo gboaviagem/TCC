@@ -2,26 +2,53 @@
 # -*- coding: utf-8 -*-
 
 """
-Script para gravação de várias elocuções do mesmo locutor, chamado S.
-V1 - 26/01/2015
+Script para gravação de várias elocuções, para ser utilizado
+em campo, na aquisição de amostras de voz de vários locutores
+em série.
+V1 - 05/01/2015
 """
 
 import os
-from rec5sec_V1 import rec5sec
+from ASV import *
 
-files_in_folder = os.listdir(os.getcwd())
-audiofiles_S = [x for x in files_in_folder if ('.wav' in x) and ('S' in x)]
-
-number = str(len(audiofiles_S) + 1)
-if len(audiofiles_S) < 9:
-	number = '0' + number
+n_recordings = 1
 
 print '\n'
 print "Say your NAME during recording.\n"
-# age = raw_input("Age: ")
-age = '24'
+gender = raw_input("\nMale (M), female (F) or true speaker (S): ").upper()
+if gender == 'S':
+	n_recordings = int(raw_input('How many recordings? '))
+	
 
-outputfile = 'S_' + number + '_' + age + '.wav' # Choosing name of output file to be created
-rec5sec(outputfile)
+for i in range(n_recordings):
+	files_in_folder = os.listdir(os.getcwd())
+	audiofiles_male = [x for x in files_in_folder if ('.wav' in x) and ('M' in x)]
+	audiofiles_female = [x for x in files_in_folder if ('.wav' in x) and ('F' in x)]
+	audiofiles_true_speaker = [x for x in files_in_folder if ('.wav' in x) and ('S' in x)]
 
-print outputfile + "\n"
+	numberM = str(len(audiofiles_male) + 1)
+	if len(audiofiles_male) < 9:
+		numberM = '0' + numberM
+
+	numberF = str(len(audiofiles_female) + 1)
+	if len(audiofiles_female) < 9:
+		numberF = '0' + numberF
+
+	numberS = str(len(audiofiles_true_speaker) + 1)
+	if len(audiofiles_true_speaker) < 9:
+		numberS = '0' + numberS
+	
+	number = numberM
+	if gender == 'F':
+		number = numberF
+	if gender == 'S':
+		number = numberS
+
+	if gender != 'S':
+		age = raw_input("Age: ")
+	else:
+		age = '24'
+	outputfile = gender + '_' + number + '_' + age + '.wav' # Choosing name of output file to be created
+	rec5sec(outputfile)
+
+	print outputfile + "\n"

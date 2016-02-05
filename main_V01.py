@@ -51,12 +51,12 @@ while keep_in_loop:
 	if option=='4':
 		option_evaluate = raw_input('Speaker samples combined (1), separated (2) or both(3)? ')
 		if option_evaluate=='1':
-			evaluate_all_vs_single_true(speaker_samples='combined')
+			evaluate_all_vs_single_true(flag_speaker_samples='combined')
 		if option_evaluate=='2':
-			evaluate_all_vs_single_true(speaker_samples='separated')
+			evaluate_all_vs_single_true(flag_speaker_samples='separated')
 		if option_evaluate=='3':
-			evaluate_all_vs_single_true(speaker_samples='separated')
-			evaluate_all_vs_single_true(speaker_samples='combined')
+			evaluate_all_vs_single_true(flag_speaker_samples='separated')
+			evaluate_all_vs_single_true(flag_speaker_samples='combined')
 	
 	if option=='5':
 		record_for_threshold_calculation()
