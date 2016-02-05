@@ -158,7 +158,7 @@ def audio2ceps(filename,flag_normalize=True):
 	# --------------------------------------------
 	# Text file creation
 	str_header = 'MFCC from file ' + filename + '.\nInfo:\n\tSample rate: ' + str(RATE) + '\n\tNumber of MFCC per frame: ' + str(nceps) + '\n\tNumber of frames (samples): ' + str(nframes) + '\n\n'
-	if sys.platform=='linux2' # in Raspbian
+	if sys.platform=='linux2': # in Raspbian
 		np.savetxt(file + '_ceps.txt',ceps)
 	else:
 		np.savetxt(file + '_ceps.txt',ceps,header=str_header)
