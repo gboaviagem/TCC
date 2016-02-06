@@ -18,6 +18,8 @@ LCD_D5 = 24
 LCD_D6 = 23
 LCD_D7 = 18
 
+PB_1 = 16
+PB_2 = 12
 
 # BOARD GPIO
 # LCD_RS = 26
@@ -45,10 +47,7 @@ E_PULSE = 0.0005
 E_DELAY = 0.0005
 
 
-# ========================================
-# LCD functions
-
-def lcd_pins_setup():
+def pins_setup():
 	# LDE display setup
 	GPIO.setwarnings(False)
 	GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
@@ -60,7 +59,18 @@ def lcd_pins_setup():
 	GPIO.setup(LCD_D6, GPIO.OUT) # DB6
 	GPIO.setup(LCD_D7, GPIO.OUT) # DB7
 	
+	GPIO.setup(PB_1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+	GPIO.setup(PB_2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
+
+# Push buttons functions
+def PB1_is_pressed():
+	return GPIO.input(PB_1)
+
+def PB2_is_pressed():
+	return GPIO.input(PB_2)
+
+# LCD functions
 def lcd_init():
 
 	# Initialise display
