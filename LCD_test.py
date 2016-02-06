@@ -65,6 +65,3 @@ while keep_in_loop:
 		lcd_string("Opcao 3.",LCD_LINE_1)
 		lcd_string("Tchau.",LCD_LINE_2)
 		keep_in_loop=0
-
-os.system("shutdown -h now")
-
