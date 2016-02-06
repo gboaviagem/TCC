@@ -25,13 +25,24 @@ import RPi.GPIO as GPIO
 # >> sudo apt-get install rpi.gpio
 import time
 
+# -----------------------------
 # Define GPIO to LCD mapping
-LCD_RS = 7
-LCD_E  = 8
-LCD_D4 = 25
-LCD_D5 = 24
-LCD_D6 = 23
-LCD_D7 = 18
+
+# BCM GPIO
+# LCD_RS = 7
+# LCD_E  = 8
+# LCD_D4 = 25
+# LCD_D5 = 24
+# LCD_D6 = 23
+# LCD_D7 = 18
+
+# BOARD GPIO
+LCD_RS = 26
+LCD_E  = 24
+LCD_D4 = 22
+LCD_D5 = 18
+LCD_D6 = 16
+LCD_D7 = 12
 
 
 # Define some device constants
@@ -122,7 +133,7 @@ def main():
 	# Main program block
 
 	GPIO.setwarnings(False)
-	GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
+	GPIO.setmode(GPIO.BOARD)       # Use BOARD GPIO numbers
 	GPIO.setup(LCD_E, GPIO.OUT)  # E
 	GPIO.setup(LCD_RS, GPIO.OUT) # RS
 	GPIO.setup(LCD_D4, GPIO.OUT) # DB4
