@@ -42,7 +42,7 @@ def menu():
 			pass
 		how_long_pressed = time.time() - start_time
 		
-		if how_long_pressed > 2.0: # Button pressed for more than 2 seconds
+		if how_long_pressed > 1.0: # Button pressed for more than 2 seconds
 			select = 1
 		else:
 			opt = (opt+1) % menu_length	# opt is incremented mod 3.
