@@ -51,6 +51,9 @@
 
 #import
 import RPi.GPIO as GPIO
+# To install RPi.GPIO:
+# >> sudo apt-get update
+# >> sudo apt-get install rpi.gpio
 import time
 
 # Define GPIO to LCD mapping
