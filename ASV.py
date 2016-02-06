@@ -81,18 +81,27 @@ def rec5sec(output_file_name,save_ceps=True):
 			audio2ceps(output_file_name) # Saves a .txt file with the MFCC of the file
 
 
-def record_true_speaker():
+def record_true_speaker(in_embedded_system=False,index_rec=0):
 	'''
 	Records 3 elocutions of 5 seconds and assigns them to the true speaker.
+	in_embedded_system tells if it is needed to pause between recordings to change the phrase in LCD display.
 	'''
-	
-	for i in range(3):
+	if in_embedded_system:
 		print '\n'
-		print "True Speaker, recording #" + str(i+1) + ".\n"
+		print "True Speaker, recording #" + str(index_rec+1) + ".\n"
 	
-		outputfile = '0' + str(i+1) + '_true_speaker.wav' # Choosing name of output file to be created
+		outputfile = '0' + str(index_rec+1) + '_true_speaker.wav' # Choosing name of output file to be created
 		rec5sec(outputfile)
 		print outputfile + "\n"
+	
+	else:
+		for i in range(3):
+			print '\n'
+			print "True Speaker, recording #" + str(i+1) + ".\n"
+	
+			outputfile = '0' + str(i+1) + '_true_speaker.wav' # Choosing name of output file to be created
+			rec5sec(outputfile)
+			print outputfile + "\n"
 
 
 def record_test_speaker():
@@ -107,19 +116,27 @@ def record_test_speaker():
 	print outputfile + "\n"
 
 
-def record_for_threshold_calculation():
+def record_for_threshold_calculation(in_embedded_system=False,index_rec=0):
 	'''
 	This function records 3 elocutions from the True Speaker, tests them against
 	the true speaker model and sets the lowest score as the threshold.
 	'''
-	
-	for i in range(3):
+	if in_embedded_system:
 		print '\n'
-		print "True Speaker, audio for threshold, recording #" + str(i+1) + ".\n"
-	
-		outputfile = '0' + str(i+1) + '_threshold_audio.wav' # Choosing name of output file to be created
+		print "True Speaker, audio for threshold, recording #" + str(index_rec+1) + ".\n"
+
+		outputfile = '0' + str(index_rec+1) + '_threshold_audio.wav' # Choosing name of output file to be created
 		rec5sec(outputfile)
 		print outputfile + "\n"
+		
+	else:
+		for i in range(3):
+			print '\n'
+			print "True Speaker, audio for threshold, recording #" + str(i+1) + ".\n"
+	
+			outputfile = '0' + str(i+1) + '_threshold_audio.wav' # Choosing name of output file to be created
+			rec5sec(outputfile)
+			print outputfile + "\n"
 
 
 

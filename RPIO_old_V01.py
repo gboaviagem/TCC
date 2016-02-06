@@ -18,7 +18,8 @@ LCD_D5 = 24
 LCD_D6 = 23
 LCD_D7 = 18
 
-PB = 12
+PB_1 = 16
+PB_2 = 12
 
 # BOARD GPIO
 # LCD_RS = 26
@@ -58,13 +59,16 @@ def pins_setup():
 	GPIO.setup(LCD_D6, GPIO.OUT) # DB6
 	GPIO.setup(LCD_D7, GPIO.OUT) # DB7
 	
-	GPIO.setup(PB, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+	GPIO.setup(PB_1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+	GPIO.setup(PB_2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 
-# Push button functions
-def PB_is_pressed():
-	return GPIO.input(PB)
+# Push buttons functions
+def PB1_is_pressed():
+	return GPIO.input(PB_1)
 
+def PB2_is_pressed():
+	return GPIO.input(PB_2)
 
 # LCD functions
 def lcd_init():
