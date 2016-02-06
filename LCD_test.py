@@ -1,35 +1,4 @@
 #!/usr/bin/python
-#--------------------------------------
-#    ___  ___  _ ____
-#   / _ \/ _ \(_) __/__  __ __
-#  / , _/ ___/ /\ \/ _ \/ // /
-# /_/|_/_/  /_/___/ .__/\_, /
-#                /_/   /___/
-#
-#  lcd_16x2.py
-#  16x2 LCD Test Script
-#
-# Author : Matt Hawkins
-# Date   : 06/04/2015
-#
-# http://www.raspberrypi-spy.co.uk/
-#
-# Copyright 2015 Matt Hawkins
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#--------------------------------------
 
 # The wiring for the LCD is as follows:
 # 1 : GND
@@ -77,49 +46,6 @@ LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
 E_PULSE = 0.0005
 E_DELAY = 0.0005
 
-def main():
-	# Main program block
-
-	GPIO.setwarnings(False)
-	GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
-	GPIO.setup(LCD_E, GPIO.OUT)  # E
-	GPIO.setup(LCD_RS, GPIO.OUT) # RS
-	GPIO.setup(LCD_D4, GPIO.OUT) # DB4
-	GPIO.setup(LCD_D5, GPIO.OUT) # DB5
-	GPIO.setup(LCD_D6, GPIO.OUT) # DB6
-	GPIO.setup(LCD_D7, GPIO.OUT) # DB7
-
-
-	# Initialise display
-	lcd_init()
-
-	while True:
-
-		# Send some test
-		lcd_string("Rasbperry Pi",LCD_LINE_1)
-		lcd_string("16x2 LCD Test",LCD_LINE_2)
-
-		time.sleep(3) # 3 second delay
-
-		# Send some text
-		lcd_string("1234567890123456",LCD_LINE_1)
-		lcd_string("abcdefghijklmnop",LCD_LINE_2)
-
-
-
-		time.sleep(3) # 3 second delay
-
-		# Send some text
-		lcd_string("RaspberryPi-spy",LCD_LINE_1)
-		lcd_string(".co.uk",LCD_LINE_2)
-
-		time.sleep(3)
-
-		# Send some text
-		lcd_string("Follow me on",LCD_LINE_1)
-		lcd_string("Twitter @RPiSpy",LCD_LINE_2)
-
-		time.sleep(3)
 
 def lcd_init():
 	# Initialise display
@@ -191,13 +117,50 @@ def lcd_string(message,line):
 	for i in range(LCD_WIDTH):
 		lcd_byte(ord(message[i]),LCD_CHR)
 
-if __name__ == '__main__':
+# -------------------------------------------------------
+def main():
+	# Main program block
 
-	try:
-		main()
-	except KeyboardInterrupt:
-		pass
-	finally:
-		lcd_byte(0x01, LCD_CMD)
-		lcd_string("Goodbye!",LCD_LINE_1)
-		GPIO.cleanup()
+	GPIO.setwarnings(False)
+	GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
+	GPIO.setup(LCD_E, GPIO.OUT)  # E
+	GPIO.setup(LCD_RS, GPIO.OUT) # RS
+	GPIO.setup(LCD_D4, GPIO.OUT) # DB4
+	GPIO.setup(LCD_D5, GPIO.OUT) # DB5
+	GPIO.setup(LCD_D6, GPIO.OUT) # DB6
+	GPIO.setup(LCD_D7, GPIO.OUT) # DB7
+
+
+	# Initialise display
+	lcd_init()
+
+	for i in range(3):
+
+		# Send some test
+		lcd_string("Rasbperry Pi",LCD_LINE_1)
+		lcd_string("16x2 LCD Test",LCD_LINE_2)
+
+		time.sleep(3) # 3 second delay
+
+		# Send some text
+		lcd_string("1234567890123456",LCD_LINE_1)
+		lcd_string("abcdefghijklmnop",LCD_LINE_2)
+
+
+		time.sleep(3) # 3 second delay
+
+		# Send some text
+		lcd_string("RaspberryPi-spy",LCD_LINE_1)
+		lcd_string(".co.uk",LCD_LINE_2)
+
+		time.sleep(3)
+
+		# Send some text
+		lcd_string("Follow me on",LCD_LINE_1)
+		lcd_string("Twitter @RPiSpy",LCD_LINE_2)
+
+		time.sleep(3)
+	
+	
+# EXECUTE
+main()
