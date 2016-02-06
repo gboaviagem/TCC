@@ -4,7 +4,7 @@ Functions regarding IO operations in Raspberry Pi.
 '''
 
 import RPi.GPIO as GPIO
-from gpiozero import Button
+# from gpiozero import Button
 import time
 
 # -----------------------------
