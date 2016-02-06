@@ -147,4 +147,4 @@ while keep_in_loop:
 		lcd_string("sistema.",LCD_LINE_2)
 		keep_in_loop = 0
 
-os.system("shutdown -h now")
+# os.system("shutdown -h now")
