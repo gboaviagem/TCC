@@ -103,9 +103,11 @@ while keep_in_loop:
 		if score >= threshold:
 			lcd_string("Confirmado,",LCD_LINE_1)
 			lcd_string("bem-vindo.",LCD_LINE_2)
+			time.sleep(3)
 		else:
 			lcd_string("Por favor,",LCD_LINE_1)
 			lcd_string("repita o teste.",LCD_LINE_2)
+			time.sleep(3)
 	
 	if option==1:
 		# True speaker recordings for GMM
