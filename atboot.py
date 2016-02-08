@@ -3,19 +3,17 @@ UFPE - DES - 06/02/2016
 ASV routine, embedded in RPi.
 '''
 
-f = open('00001_teste.txt','w')
-f.write('Script started')
-f.close()
-
 from ASV import *
 from RPIO import *
 import time
 import os
 
 
-f = open('00002_teste.txt','w')
-f.write('Script imported libraries')
-f.close()
+if sys.platform=='linux2':
+	# Change the current folder to /TCCgit. Usually the script, when ran at boot, runs in the /home/pi folder.
+	current = os.getcwd()
+	os.chdir(current + '/TCCgit')
+
 
 def menu():
 	'''
@@ -58,9 +56,6 @@ def menu():
 			opt = (opt+1) % menu_length	# opt is incremented mod 3.
 	return opt
 	
-f = open('00003_teste.txt','w')
-f.write('Script defined the menu() function')
-f.close()
 
 # ----------------------------
 # Setup
@@ -69,10 +64,6 @@ lcd_init()
 
 lcd_string("Inicializando,",LCD_LINE_1)
 lcd_string("aguarde. (1/3)",LCD_LINE_2)
-
-f = open('00004_teste.txt','w')
-f.write('RPi setup done\nCurrent folder' + os.getcwd())
-f.close()
 
 # ------------------------------------------------------
 # Building GMM

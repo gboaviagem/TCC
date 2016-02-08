@@ -37,7 +37,7 @@ def rec5sec(output_file_name,save_ceps=True):
 	
 	if sys.platform=='linux2':
 		# For when using in Raspbian
-		os.system("arecord -D plughw:0,0 -d 5 -f S16_LE -c " + str(CHANNELS) + " -r " + str(RATE) + " ./" + output_file_name)
+		os.system("arecord -D plughw:0,0 -d 5 -f S16_LE -c " + str(CHANNELS) + " -r " + str(RATE) + ' ./' + output_file_name)
 		if save_ceps:
 			audio2ceps(output_file_name) # Saves a .txt file with the MFCC of the file
 	else:
