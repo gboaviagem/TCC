@@ -8,12 +8,11 @@ from RPIO import *
 import time
 import os
 
-
-if sys.platform=='linux2':
+# Changing current folder, if the script runs on the RPi.
+if sys.platform=='linux2' and (not '/TCCgit' in os.getcwd()):
 	# Change the current folder to /TCCgit. Usually the script, when ran at boot, runs in the /home/pi folder.
 	current = os.getcwd()
 	os.chdir(current + '/TCCgit')
-
 
 def menu():
 	'''
@@ -156,4 +155,4 @@ while keep_in_loop:
 		lcd_string("sistema.",LCD_LINE_2)
 		keep_in_loop = 0
 
-# os.system("shutdown -h now")
+os.system("shutdown -h now")
