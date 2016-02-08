@@ -23,7 +23,7 @@ threshold = get_score_threshold(speaker_samples_threshold = 'combined')
 # ------------------------------------------------------
 # Main loop
 while keep_in_loop:
-	option = raw_input('\nWhat to do?\n1- Exit\n2- Train true speaker\n3- Listen to test speaker\n4- Evaluate\n5- Recordings for threshold calculation\nOption: ')
+	option = raw_input('\nWhat to do?\n1- Exit\n2- Train true speaker\n3- Listen to test speaker\n4- Evaluate\n5- Recordings for threshold calculation\n6- Re-calculate cepstra\nOption: ')
 	if option=='2':
 		record_true_speaker()
 		model_true = get_GMM_true_speaker(speaker_samples='combined') # True Speaker model updated
@@ -66,3 +66,5 @@ while keep_in_loop:
 		else:
 			decision = 'REJECTED'
 		print '\n', decision
+	if option=='6':
+		convert_all_audiofile2ceps()

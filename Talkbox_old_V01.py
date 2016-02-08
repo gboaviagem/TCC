@@ -3,8 +3,8 @@
 
 """
 All the functions of the Scikits.Talkbox 0.2.5 toolbox, as found in:
-    http://pydoc.net/Python/scikits.talkbox/0.2.5/
-    
+	http://pydoc.net/Python/scikits.talkbox/0.2.5/
+	
 Guilherme Boaviagem - 10/12/2015
 """
 
@@ -214,7 +214,7 @@ def mfcc(input, nwin=256, nfft=512, fs=16000, nceps=13):
     # Number of overlapping samples in each frame
     t_overlap = 10*10**(-3) # Time in seconds of overlapping between frames
     over = int(t_overlap*fs)
-#     over = nwin - 160
+# 	over = nwin - 160
 
     # Pre-emphasis factor (to take into account the -6dB/octave rolloff of the
     # radiation at the lips level)
@@ -239,7 +239,7 @@ def mfcc(input, nwin=256, nfft=512, fs=16000, nceps=13):
     plt.figure()
     nfiltros,lenfiltros = fbank.shape
     for i in range(nfiltros):
-        plt.plot(range(lenfiltros),fbank[i,:])
+    	plt.plot(range(lenfiltros),fbank[i,:])
     plt.axis([0, lenfiltros, 0, np.max(fbank)])
     plt.show()
     '''
@@ -250,24 +250,12 @@ def mfcc(input, nwin=256, nfft=512, fs=16000, nceps=13):
     extract = preemp(input, prefac)
     framed = segment_axis(extract, nwin, over) * w
 
-
     # Compute the spectrum magnitude
     spec = np.abs(fft(framed, nfft, axis=-1))
     # Filter the spectrum through the triangle filterbank
     mspec = np.log10(np.dot(spec, fbank.T))
     # Use the DCT to 'compress' the coefficients (spectrum -> cepstrum domain)
     ceps = dct(mspec, type=2, norm='ortho', axis=-1)[:, :nceps]
-    nframes = ceps.shape[0]
-    print 'nframes: ', nframes
-	    
-#     -----------------------------------------
-#     Cepstrum mean subtraction
-#     mean_along_frames = np.mean(mspec,axis=0) # Mean along the vertical dimension of the mel-spectrum
-#     
-#     mean_along_frames_stack = mean_along_frames
-#     for i in range(nframes-1):
-#         mean_along_frames_stack = np.vstack((mean_along_frames_stack, mean_along_frames))
-#     ceps = ceps - mean_along_frames_stack[:,0:nceps]
     
     return ceps, mspec, spec
 
